@@ -19,17 +19,20 @@
   "license": "ISC",
   "packageManager": "pnpm@10.12.1",
   "dependencies": {
+    "@clerk/express": "^2.1.15",
     "@types/express": "^5.0.6",
+    "@types/node": "^25.6.0",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
     "pg": "^8.20.0",
-    "@types/node": "^25.6.0"
+    "svix": "^1.93.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/pg": "^8.20.0",
     "drizzle-kit": "^0.31.10",
     "tsc-watch": "^7.2.0",
-    "tsx": "^4.21.0",
-    "@types/pg": "^8.20.0"
+    "tsx": "^4.21.0"
   }
 }
