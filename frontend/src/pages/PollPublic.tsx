@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useApi, ApiError } from "@/lib/api";
-import { getAnonToken } from "@/lib/anonToken";
+import { getAnonToken, hasSubmitted, markSubmitted } from "@/lib/anonToken";
 import type { Poll, PollTallyQuestion } from "@/types";
 
 function ResultBars({ questions }: { questions: PollTallyQuestion[] }) {
@@ -71,6 +71,7 @@ export function PollPublic() {
     try {
       const { poll } = await api.getPoll(id);
       setPoll(poll);
+      if (hasSubmitted(poll.id)) setSubmitted(true);
     } catch (e) {
       if (e instanceof ApiError) {
         setError(e.message);
@@ -105,9 +106,15 @@ export function PollPublic() {
     setSubmitting(true);
     try {
       await api.submitResponse(poll.id, payload);
+      markSubmitted(poll.id);
       setSubmitted(true);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Failed to submit");
+      if (e instanceof ApiError && e.status === 409) {
+        markSubmitted(poll.id);
+        setSubmitted(true);
+      } else {
+        setError(e instanceof ApiError ? e.message : "Failed to submit");
+      }
     } finally {
       setSubmitting(false);
     }
