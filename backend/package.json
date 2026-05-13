@@ -22,6 +22,7 @@
     "@clerk/express": "^2.1.15",
     "@types/express": "^5.0.6",
     "@types/node": "^25.6.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
@@ -30,6 +31,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/pg": "^8.20.0",
     "drizzle-kit": "^0.31.10",
     "tsc-watch": "^7.2.0",
