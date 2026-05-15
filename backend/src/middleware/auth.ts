@@ -3,15 +3,7 @@ import type { Request, Response, NextFunction } from "express";
 import { findByClerkId, upsertFromClerk } from "../app/auth/auth.service.js";
 import ApiError from "../utils/api-error.js";
 
-/* ────────────────────────────────────────────────────────────────────
-   Auth middleware — resolves the Clerk session into the local DB user
-   record and attaches it as `req.dbUser`.
-     • loadDbUser         → 401 if not signed in (hard requirement)
-     • loadOptionalDbUser → continues either way (req.dbUser may be undef)
-   ──────────────────────────────────────────────────────────────────── */
-
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       dbUser?: {

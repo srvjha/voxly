@@ -3,12 +3,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-/* ────────────────────────────────────────────────────────────────────
-   Validated environment variables — single source of truth.
-   Import { env } from "../utils/env.js" anywhere instead of touching
-   process.env directly. Fails fast at startup if config is wrong.
-   ──────────────────────────────────────────────────────────────────── */
-
 const csvList = (s: string) =>
   s.split(",").map((x) => x.trim()).filter(Boolean);
 
@@ -28,7 +22,6 @@ const envSchema = z.object({
     .string()
     .min(1, "CLERK_WEBHOOK_SECRET is required"),
 
-  /** Comma-separated list. Defaults to local Vite dev origin. */
   CORS_ORIGINS: z
     .string()
     .default("http://localhost:5173")

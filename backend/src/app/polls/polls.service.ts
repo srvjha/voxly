@@ -18,11 +18,6 @@ import type {
   UpdatePollInput,
 } from "./polls.schema.js";
 
-/* ── Country aggregation helpers ─────────────────────────────────── */
-
-// ISO-3166-1 alpha-2 → English name. Small inline table covers the
-// common cases; anything else falls back to the raw country code so the
-// frontend can still display something useful.
 const COUNTRY_NAMES: Record<string, string> = {
   IN: "India", US: "United States", GB: "United Kingdom", CA: "Canada",
   AU: "Australia", DE: "Germany", FR: "France", ES: "Spain", IT: "Italy",
@@ -69,13 +64,8 @@ function lookupCountry(rawIp: string | null | undefined): string | null {
   return hit?.country ?? null;
 }
 
-/* Resolve country for an authenticated respondent via Clerk's session
-   activity (server-side IP geolocation done by Clerk).
-   Returns null if the user has no sessions, no activity country, or the
-   Clerk call fails (we just degrade silently). */
 async function countryFromClerk(clerkId: string): Promise<string | null> {
   try {
-    // SDK returns a paginated shape on newer versions; older returns array.
     const resp = (await clerkClient.sessions.getSessionList({
       userId: clerkId,
     })) as unknown;
@@ -279,9 +269,6 @@ export async function listMyPolls(creatorId: string) {
   return rows.map((r) => ({ ...r.poll, responseCount: r.responseCount }));
 }
 
-/* Polls the user has responded to (as a respondent — signed-in only).
-   Anonymous responses can't be attributed back to a user account, so they
-   aren't included in this history. */
 export async function listParticipatedPolls(respondentId: string) {
   const rows = await db
     .select({
@@ -521,10 +508,6 @@ async function computeTallies(pollId: string, full: PollWithStructure) {
     };
   });
 
-  // Country aggregation:
-  //   • Authenticated respondent → Clerk's latest session activity country
-  //   • Anonymous respondent (or Clerk miss) → geoip on stored IP
-  //   • Both miss → "Unknown" bucket
   const respRows = await db
     .select({
       ipAddress: pollResponses.ipAddress,
@@ -533,7 +516,6 @@ async function computeTallies(pollId: string, full: PollWithStructure) {
     .from(pollResponses)
     .where(eq(pollResponses.pollId, pollId));
 
-  // Map our user IDs → clerkId for the authenticated respondents
   const respondentIds = Array.from(
     new Set(
       respRows.map((r) => r.respondentId).filter((v): v is string => !!v),
@@ -549,7 +531,6 @@ async function computeTallies(pollId: string, full: PollWithStructure) {
     for (const u of userRows) clerkIdByUserId.set(u.id, u.clerkId);
   }
 
-  // Cache Clerk country lookups per clerkId so each unique user is fetched once
   const clerkCountryCache = new Map<string, string | null>();
   async function clerkCountryFor(userId: string): Promise<string | null> {
     const clerkId = clerkIdByUserId.get(userId);

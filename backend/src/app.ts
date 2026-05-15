@@ -11,8 +11,6 @@ import ApiResponse from "./utils/api-response.js";
 function createExpressApplication(): Express {
   const app = express();
 
-  // Behind ngrok / a reverse proxy, req.ip would otherwise be the proxy's IP.
-  // Trusting proxies makes Express read X-Forwarded-For for the real client IP.
   app.set("trust proxy", true);
 
   app.use(

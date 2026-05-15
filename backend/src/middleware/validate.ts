@@ -2,15 +2,6 @@ import type { Request, Response, NextFunction, RequestHandler } from "express";
 import type { ZodType } from "zod";
 import type { ApiErrorBody } from "../utils/api-response.js";
 
-/* ────────────────────────────────────────────────────────────────────
-   Request validation middleware.
-
-   Pass a `{ body | params | query }` map of zod schemas. Each named
-   source is .safeParse'd and, on success, REPLACED on the request
-   object with the parsed (coerced + defaulted) data. On failure a
-   uniform 400 response is returned using the shared error envelope.
-   ──────────────────────────────────────────────────────────────────── */
-
 type Source = "body" | "params" | "query";
 type Schemas = Partial<Record<Source, ZodType>>;
 
