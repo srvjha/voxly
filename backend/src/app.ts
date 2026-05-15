@@ -4,7 +4,7 @@ import cors from "cors";
 import { clerkMiddleware } from "@clerk/express";
 import authRouter from "./app/auth/auth.routes.js";
 import pollsRouter from "./app/polls/polls.routes.js";
-import { errorHandler } from "./middleware/index.js";
+import { errorHandler, globalLimiter } from "./middleware/index.js";
 import { env } from "./utils/env.js";
 import ApiResponse from "./utils/api-response.js";
 
@@ -12,6 +12,8 @@ function createExpressApplication(): Express {
   const app = express();
 
   app.set("trust proxy", true);
+
+  app.use(globalLimiter);
 
   app.use(
     cors({
