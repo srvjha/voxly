@@ -1,19 +1,9 @@
 @import "tailwindcss";
 
-/* Drive Tailwind's `dark:` variant off the app's own `data-theme="dark"`
-   instead of the OS `prefers-color-scheme`. The theme store toggles
-   `data-theme` on <html>, so this keeps Tailwind and the design tokens in
-   sync regardless of OS setting. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-/* ─────────────────────────────────────────────────────────────────
-   Voxly Design System — Modern India.
-   Saffron orange + deep indigo blue, glassmorphism on hero surfaces,
-   mandala / rangoli / jali motifs used as subtle texture only.
-   ───────────────────────────────────────────────────────────────── */
 
 @theme {
-  /* ── Saffron Orange ─────────────────────────────────────────── */
   --color-orange-50:  #FFF7ED;
   --color-orange-100: #FFEDD5;
   --color-orange-200: #FED7AA;
@@ -25,7 +15,6 @@
   --color-orange-800: #9A3E08;
   --color-orange-900: #7C3207;
 
-  /* ── Deep Indigo Blue ───────────────────────────────────────── */
   --color-blue-50:   #EEF2FF;
   --color-blue-100:  #E0E7FF;
   --color-blue-200:  #C7D2FE;
@@ -112,7 +101,6 @@
   --font-mono:    "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --font-sans:    "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
 
-  /* ── Radii ──────────────────────────────────────────────────── */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -234,7 +222,6 @@
   }
 }
 
-/* ── Keyframes ─────────────────────────────────────────────────── */
 @keyframes livePulse {
   0%   { box-shadow: 0 0 0 0   rgba(249, 115, 22, 0.45); }
   70%  { box-shadow: 0 0 0 8px rgba(249, 115, 22, 0);    }
@@ -345,7 +332,6 @@
   width: 100%;
 }
 
-/* ── Hero stagger ──────────────────────────────────────────────── */
 .hero-badge    { animation: fadeSlideUp 400ms ease-out 0ms   both; }
 .hero-headline { animation: fadeSlideUp 400ms ease-out 100ms both; }
 .hero-sub      { animation: fadeSlideUp 400ms ease-out 200ms both; }
@@ -355,7 +341,6 @@
 
 .bar-fill { animation: barFill 800ms cubic-bezier(0.4, 0, 0.2, 1) 700ms both; }
 
-/* ── Reveal-on-scroll utility (paired with IntersectionObserver) ── */
 .reveal {
   opacity: 0;
   transform: translateY(24px);
@@ -366,7 +351,6 @@
   transform: translateY(0);
 }
 
-/* ── Stagger helper for generic lists ───────────────────────────── */
 .stagger-children > * {
   animation: fadeSlideIn 300ms var(--ease-out) both;
 }
@@ -377,7 +361,6 @@
 .stagger-children > *:nth-child(5) { animation-delay: 240ms; }
 .stagger-children > *:nth-child(6) { animation-delay: 300ms; }
 
-/* ── Subtle background grid (kept for inner-app pages) ──────────── */
 .grid-bg {
   background-image:
     linear-gradient(to right, color-mix(in oklab, var(--color-foreground) 6%, transparent) 1px, transparent 1px),
@@ -386,7 +369,6 @@
   background-position: -1px -1px;
 }
 
-/* ── Hero waveform scroll (kept available for inner pages) ──────── */
 @keyframes wave-scroll {
   from { transform: translateX(0);    }
   to   { transform: translateX(-50%); }

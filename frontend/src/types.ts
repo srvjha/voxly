@@ -63,7 +63,6 @@ export interface PollListItem {
 }
 
 export interface PollParticipationItem extends PollListItem {
-  /** When the current user submitted their response */
   submittedAt: string;
 }
 

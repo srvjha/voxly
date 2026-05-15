@@ -39,7 +39,6 @@ function HeroSection() {
       <HeroBackground />
 
       <div className="relative w-full max-w-[880px] mx-auto text-center flex flex-col items-center">
-        {/* Live Badge */}
         <Badge
           variant="outline"
           className="hero-badge gap-2 rounded-full px-3.5 py-1.5 text-[13px] font-semibold border-orange-500/30 bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-500/10"
@@ -48,7 +47,6 @@ function HeroSection() {
           Live responses. Real time.
         </Badge>
 
-        {/* Headline */}
         <h1
           className="hero-headline mt-6 font-display font-extrabold leading-[1.05] text-foreground text-balance"
           style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)" }}
@@ -56,12 +54,10 @@ function HeroSection() {
           Live{" "}<span className="gradient-orange">Polls</span> with <span className="gradient-blue"> Real Responses</span> and Zero Hassle
         </h1>
 
-        {/* Subheading */}
         <p className="hero-sub mt-5 text-muted-foreground max-w-[620px] mx-auto text-[18px] leading-relaxed text-balance">
           Build a poll in seconds, share one link, watch answers stream in.
         </p>
 
-        {/* CTAs */}
         <div className="hero-ctas mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <SignedIn>
             <Link to="/polls/new">
@@ -93,7 +89,6 @@ function HeroSection() {
           </SignedOut>
         </div>
 
-        {/* Social proof strip */}
         <div className="hero-proof mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-sm">
           <div className="flex items-center gap-3">
             <AvatarStack />
@@ -110,7 +105,6 @@ function HeroSection() {
           </span>
         </div>
 
-        {/* Hero Preview Card */}
         <div className="hero-card relative mt-14 w-full max-w-[680px]">
           <HeroPreviewCard />
         </div>
@@ -172,7 +166,6 @@ function HeroPreviewCard() {
       className="glass rounded-[20px] p-5 sm:p-6 border-white/40 dark:border-white/10 shadow-2xl"
       style={{ transform: "perspective(1200px) rotateX(4deg)" }}
     >
-      {/* Header */}
       <div className="flex items-center justify-between mb-4 text-left">
         <div>
           <div className="font-mono uppercase tracking-wider text-[10px] text-muted-foreground">
@@ -191,7 +184,6 @@ function HeroPreviewCard() {
         </Badge>
       </div>
 
-      {/* Bars */}
       <div className="space-y-3">
         {bars.map((b) => (
           <div key={b.label} className="text-left">
@@ -215,7 +207,6 @@ function HeroPreviewCard() {
         ))}
       </div>
 
-      {/* Footer */}
       <div className="mt-5 flex items-center justify-between text-xs text-muted-foreground">
         <span>
           <strong className="text-foreground">128 responses</strong>
@@ -226,7 +217,6 @@ function HeroPreviewCard() {
   );
 }
 
-/* ══ FEATURES ════════════════════════════════════════════════════ */
 function FeaturesSection() {
   return (
     <section
@@ -305,7 +295,6 @@ function FeatureCard({
   );
 }
 
-/* ══ HOW IT WORKS ════════════════════════════════════════════════ */
 function HowItWorksSection() {
   return (
     <section
@@ -313,7 +302,6 @@ function HowItWorksSection() {
       className="relative py-[clamp(64px,8vw,120px)] px-[clamp(20px,5vw,80px)] bg-blue-900/10"
       
     >
-       {/* Rangoli dot field */}
       <div
         aria-hidden="true"
         className="absolute inset-0 pointer-events-none opacity-15"
@@ -330,7 +318,6 @@ function HowItWorksSection() {
         />
 
         <div className="mt-14 relative">
-          {/* Dashed connector — sits behind icons, masked by their solid bg */}
           <div
             aria-hidden="true"
             className="hidden md:block absolute top-[56px] left-[18%] right-[18%] h-px border-t-2 border-dashed border-orange-500/35 pointer-events-none z-0"
@@ -374,7 +361,6 @@ function Step({
 }) {
   return (
     <div className="relative flex flex-col items-center text-center px-2">
-      {/* Solid disc — matches section bg so dashed connector is masked behind it */}
       <div
         className="relative inline-flex h-[88px] w-[88px] items-center justify-center rounded-full"
         style={{ backgroundColor: "var(--color-bg-warm)" }}
@@ -382,7 +368,6 @@ function Step({
         <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-orange-700 text-white shadow-[0_8px_24px_rgba(249,115,22,0.35)]">
           <Icon className="h-6 w-6" />
         </div>
-        {/* Step number chip — anchored to the disc */}
         <span
           className="absolute -top-1 -right-1 inline-flex h-7 min-w-7 items-center justify-center rounded-full px-2 font-mono text-[11px] font-bold text-orange-600 bg-orange-500/15 border border-orange-500/40"
         >
@@ -397,7 +382,6 @@ function Step({
   );
 }
 
-/* ══ TESTIMONIALS ════════════════════════════════════════════════ */
 function TestimonialsSection() {
   const testimonials = [
     {
@@ -474,20 +458,16 @@ function TestimonialsSection() {
   );
 }
 
-/* ══ FINAL CTA ═══════════════════════════════════════════════════ */
 function FinalCTASection() {
   return (
     <section
       id="pricing"
       className={[
         "relative py-[clamp(48px,6vw,80px)] px-[clamp(20px,5vw,80px)] overflow-hidden",
-        // Light mode: warm cream → indigo wash so the dark "Ready" heading reads
         "bg-gradient-to-br from-orange-50 via-orange-100/60 to-indigo-100",
-        // Dark mode: keep the subtle dark indigo tint that was already there
         "dark:bg-blue-900/10 dark:from-transparent dark:via-transparent dark:to-transparent",
       ].join(" ")}
     >
-      {/* Rangoli dot field — orange in light, white in dark */}
       <div
         aria-hidden="true"
         className="absolute inset-0 pointer-events-none opacity-25 dark:opacity-15"
@@ -553,9 +533,7 @@ function FinalCTAButton({ children }: { children: React.ReactNode }) {
       size="lg"
       className={[
         "h-auto rounded-full px-8 py-3.5 text-base font-bold hover:scale-[1.03] transition-all",
-        // Light: filled orange (inverted from the dark variant) so it pops on cream bg
         "bg-gradient-to-br from-orange-500 to-orange-600 text-white hover:from-orange-500 hover:to-orange-600 shadow-[0_8px_24px_rgba(249,115,22,0.35)]",
-        // Dark: keep the original white pill with orange text
         "dark:bg-white dark:from-white dark:to-white dark:text-orange-500 dark:hover:bg-white dark:hover:text-orange-600 dark:shadow-[0_8px_24px_rgba(0,0,0,0.20)]",
       ].join(" ")}
     >
@@ -564,15 +542,12 @@ function FinalCTAButton({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* ══ FOOTER ══════════════════════════════════════════════════════ */
 function Footer() {
   return (
     <footer
       className={[
         "relative",
-        // Light: cream-tinted footer with dark text
         "bg-orange-50/60 border-t border-orange-200/60 text-blue-950/70",
-        // Dark: original deep indigo, unchanged
         "dark:bg-blue-950 dark:border-transparent dark:text-white/75",
       ].join(" ")}
     >
@@ -611,15 +586,12 @@ function Footer() {
         </div>
       </div>
 
-      {/* Giant VOXLY wordmark — faint orange in light, faint white in dark */}
       <div className="relative max-w-[1400px] mx-auto px-[clamp(20px,5vw,80px)] pb-2 -mb-2 select-none">
         <div
           aria-hidden="true"
           className={[
             "font-display font-extrabold leading-none tracking-[-0.04em] text-center",
-            // Light mode wordmark — faint orange so it reads on the cream bg
             "text-orange-500/12",
-            // Dark mode wordmark — gradient (kept as inline style below)
             "dark:text-transparent",
           ].join(" ")}
           style={{ fontSize: "clamp(5rem, 22vw, 22rem)" }}

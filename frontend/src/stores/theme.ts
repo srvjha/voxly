@@ -58,7 +58,6 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
   },
 }));
 
-// Track OS preference changes while user is on "system" mode.
 if (typeof window !== "undefined" && window.matchMedia) {
   const mq = window.matchMedia("(prefers-color-scheme: dark)");
   mq.addEventListener("change", () => {

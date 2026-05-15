@@ -1,5 +1,3 @@
-/* Shared Voxly brand mark — orange radial mandala icon.
-   Used by the header navbar and the footer for visual consistency. */
 
 export function VoxlyMark({
   size = 28,
