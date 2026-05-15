@@ -37,28 +37,68 @@ const baseClient: AxiosInstance = axios.create({
   },
 });
 
+/** Backend envelope shapes — see backend/src/utils/api-response.ts */
+interface SuccessEnvelope<T> {
+  success: true;
+  message: string;
+  data: T | null;
+}
+interface ErrorEnvelope {
+  success: false;
+  message: string;
+  /** Legacy "error" key still emitted on a few code paths */
+  error?: string;
+  source?: string;
+  issues?: Array<{ path: string; message: string; code?: string }>;
+}
+
+function looksLikeEnvelope(v: unknown): v is { success: boolean } {
+  return (
+    typeof v === "object" &&
+    v !== null &&
+    "success" in v &&
+    typeof (v as { success: unknown }).success === "boolean"
+  );
+}
+
+/** Pull the friendliest error message out of an axios error body. */
+function extractErrorMessage(data: unknown, fallback: string): string {
+  if (data && typeof data === "object") {
+    const d = data as Partial<ErrorEnvelope> & { error?: string };
+    return d.message ?? d.error ?? fallback;
+  }
+  return fallback;
+}
+
 async function send<T>(
   client: AxiosInstance,
   config: AxiosRequestConfig,
   token: string | null,
 ): Promise<T> {
   try {
-    const res = await client.request<T>({
+    const res = await client.request<unknown>({
       ...config,
       headers: {
         ...config.headers,
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
-    return res.data;
+    // Unwrap { success, message, data } → data so call sites stay unchanged.
+    // Non-envelope responses (e.g. legacy or 204 No Content) pass through.
+    const body = res.data;
+    if (looksLikeEnvelope(body) && body.success === true) {
+      const data = (body as SuccessEnvelope<T>).data;
+      return (data ?? (undefined as unknown)) as T;
+    }
+    return body as T;
   } catch (err) {
     if (err instanceof AxiosError) {
       const status = err.response?.status ?? 0;
       const data = err.response?.data;
-      const message =
-        typeof data === "object" && data !== null && "error" in data
-          ? String((data as { error: unknown }).error)
-          : err.message || `Request failed (${status})`;
+      const message = extractErrorMessage(
+        data,
+        err.message || `Request failed (${status})`,
+      );
       throw new ApiError(
         status,
         message,

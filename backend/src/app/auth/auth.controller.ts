@@ -1,5 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { Webhook } from "svix";
+import ApiError from "../../utils/api-error.js";
+import ApiResponse from "../../utils/api-response.js";
+import { env } from "../../utils/env.js";
 import {
   clerkWebhookEvent,
   type ClerkWebhookEvent,
@@ -15,48 +18,39 @@ export async function handleClerkWebhook(
   next: NextFunction,
 ) {
   try {
-    const secret = process.env.CLERK_WEBHOOK_SECRET;
-    if (!secret) {
-      return res
-        .status(500)
-        .json({ error: "Server misconfigured: CLERK_WEBHOOK_SECRET missing" });
-    }
-
     const svixId = req.header("svix-id");
     const svixTimestamp = req.header("svix-timestamp");
     const svixSignature = req.header("svix-signature");
 
     if (!svixId || !svixTimestamp || !svixSignature) {
-      return res.status(400).json({ error: "Missing svix headers" });
+      throw ApiError.badRequest("Missing svix headers");
     }
 
     const payload = (req.body as Buffer).toString("utf8");
 
     let verified: unknown;
     try {
-      verified = new Webhook(secret).verify(payload, {
+      verified = new Webhook(env.CLERK_WEBHOOK_SECRET).verify(payload, {
         "svix-id": svixId,
         "svix-timestamp": svixTimestamp,
         "svix-signature": svixSignature,
       });
     } catch {
-      return res.status(401).json({ error: "Invalid signature" });
+      throw ApiError.unauthorized("Invalid signature");
     }
 
     const parsed = clerkWebhookEvent.safeParse(verified);
     if (!parsed.success) {
-      return res.status(400).json({
-        error: "Unsupported or malformed event",
-        issues: parsed.error.issues.map((i) => ({
-          path: i.path.join("."),
-          message: i.message,
-        })),
-      });
+      throw ApiError.badRequest("Unsupported or malformed event");
     }
 
     await dispatchEvent(parsed.data);
 
-    return res.status(200).json({ ok: true });
+    return ApiResponse.ok({
+      res,
+      message: "Webhook processed",
+      data: { ok: true },
+    });
   } catch (err) {
     next(err);
   }
@@ -74,9 +68,15 @@ async function dispatchEvent(event: ClerkWebhookEvent) {
   }
 }
 
-export function getMe(req: Request, res: Response) {
-  if (!req.dbUser) {
-    return res.status(401).json({ error: "Unauthenticated" });
+export function getMe(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (!req.dbUser) throw ApiError.unauthorized();
+    return ApiResponse.ok({
+      res,
+      message: "Current user",
+      data: { user: req.dbUser },
+    });
+  } catch (err) {
+    next(err);
   }
-  return res.json({ user: req.dbUser });
 }
