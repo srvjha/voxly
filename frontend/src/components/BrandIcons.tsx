@@ -1,4 +1,3 @@
-/* Inline brand SVGs — lucide-react 1.14 doesn't ship brand icons. */
 
 type IconProps = React.SVGProps<SVGSVGElement> & { size?: number };
 

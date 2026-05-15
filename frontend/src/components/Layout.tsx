@@ -12,12 +12,6 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { VoxlyMark } from "@/components/VoxlyMark";
 
-/* ──────────────────────────────────────────────────────────────────
-   Header:
-     • At top of page  → full-width edge-to-edge bar, transparent
-     • On scroll > 60  → collapses into a centered glass pill (max-w-860)
-     • Animates smoothly between the two states.
-   ────────────────────────────────────────────────────────────────── */
 
 export function Layout() {
   const navigate = useNavigate();
@@ -41,10 +35,8 @@ export function Layout() {
           "flex items-center justify-between",
           "border transition-all duration-500",
           scrolled
-            ? // Collapsed pill state
-              "top-5 w-[calc(100%-32px)] max-w-[860px] px-4 sm:px-5 py-2.5 rounded-full glass border-transparent"
-            : // Expanded full-width state
-              "top-0 w-full max-w-none px-[clamp(20px,5vw,64px)] py-4 rounded-none bg-transparent border-transparent shadow-none",
+            ? "top-5 w-[calc(100%-32px)] max-w-[860px] px-4 sm:px-5 py-2.5 rounded-full glass border-transparent"
+            : "top-0 w-full max-w-none px-[clamp(20px,5vw,64px)] py-4 rounded-none bg-transparent border-transparent shadow-none",
         ].join(" ")}
         style={{
           transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
@@ -61,7 +53,6 @@ export function Layout() {
           </span>
         </Link>
 
-        {/* Center nav links — only on landing, only on md+ */}
         {isLanding && (
           <nav className="hidden md:flex items-center gap-8">
             <NavLink href="#features">Features</NavLink>

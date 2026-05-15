@@ -31,16 +31,7 @@ import {
 import { useApi, ApiError } from "@/lib/api";
 import type { CreatePollPayload } from "@/types";
 
-/* ────────────────────────────────────────────────────────────────────
-   Voxly Poll Builder — 3-step wizard.
 
-   • react-hook-form drives all field state, validation, and arrays.
-   • zod schemas validate per-step before allowing Next.
-   • Clickable step indicator — only steps you've validated past unlock.
-   • Right column: live respondent preview, sticky.
-   ──────────────────────────────────────────────────────────────────── */
-
-/* ── Validation schemas ─────────────────────────────────────────── */
 
 const optionSchema = z.object({
   text: z.string().trim().min(1, "Option text is required"),
@@ -75,7 +66,6 @@ type FormValues = z.infer<typeof fullSchema>;
 
 const DETAILS_FIELDS = ["title", "description", "isAnonymous", "expiresAt"] as const;
 
-/* ── Helpers ────────────────────────────────────────────────────── */
 
 function toLocalDatetimeInputValue(d: Date) {
   const pad = (n: number) => n.toString().padStart(2, "0");
@@ -88,20 +78,13 @@ function defaultExpiry() {
   return toLocalDatetimeInputValue(d);
 }
 
-/* Shared card surface — light mode gets warm-tinted border + deeper shadow
-   so cards lift off the cream page. Dark mode rules are unchanged. */
 const cardSurface = [
-  // Light mode polish
   "bg-white border-orange-200/60 shadow-[0_4px_14px_-4px_rgba(249,115,22,0.10),0_2px_4px_-2px_rgba(15,14,46,0.06)]",
-  // Dark mode (unchanged)
   "dark:bg-[#080626] dark:border-white/10 dark:shadow-[0_1px_0_rgba(255,255,255,0.04)_inset]",
 ].join(" ");
 
 type Step = 1 | 2 | 3;
 
-/* ────────────────────────────────────────────────────────────────────
-   Main component
-   ──────────────────────────────────────────────────────────────────── */
 
 export function PollBuilder() {
   const { id } = useParams();
@@ -140,10 +123,8 @@ export function PollBuilder() {
 
   const questionFields = useFieldArray({ control, name: "questions" });
 
-  // Watched values — used by step indicator and live preview
   const values = watch();
 
-  /* ── Hydrate when editing ───────────────────────────────────── */
   useEffect(() => {
     if (!isEdit || !id) return;
     (async () => {
@@ -172,7 +153,6 @@ export function PollBuilder() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isEdit]);
 
-  /* ── Step navigation ────────────────────────────────────────── */
   async function goNext() {
     setSubmitError(null);
     if (step === 1) {
@@ -201,7 +181,6 @@ export function PollBuilder() {
     if (target <= furthestStep) setStep(target);
   }
 
-  /* ── Submit ─────────────────────────────────────────────────── */
   const onSubmit = handleSubmit(async (data) => {
     setSubmitError(null);
     const payload: CreatePollPayload = {
@@ -236,7 +215,6 @@ export function PollBuilder() {
       onSubmit={onSubmit}
       className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-8"
     >
-      {/* ── Left column: wizard ─────────────────────────────────── */}
       <div className="space-y-8 min-w-0">
         <div>
           <div className="font-mono text-xs uppercase tracking-wider text-accent-600 dark:text-accent-400 mb-1.5">
@@ -301,7 +279,6 @@ export function PollBuilder() {
         )}
       </div>
 
-      {/* ── Right column: live preview ──────────────────────────── */}
       <aside className="hidden lg:block">
         <div className="sticky top-32 space-y-3">
           <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted-foreground">
@@ -320,7 +297,6 @@ export function PollBuilder() {
         </div>
       </aside>
 
-      {/* ── Full-width sticky action bar ────────────────────────── */}
       <div
         className={`sticky bottom-4 lg:col-span-2 grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-xl border border-border backdrop-blur p-3 shadow-lg bg-surface/95 ${cardSurface}`}
       >
@@ -376,7 +352,6 @@ export function PollBuilder() {
   );
 }
 
-/* ── Step 1: Details ──────────────────────────────────────────── */
 
 function DetailsStep({
   register,
@@ -453,7 +428,6 @@ function DetailsStep({
   );
 }
 
-/* ── Step 2: Questions ────────────────────────────────────────── */
 
 function QuestionsStep({
   control,
@@ -569,7 +543,6 @@ function QuestionsStep({
   );
 }
 
-/* Options field — owns its own setValue-driven array per question. */
 function OptionsField({
   qIdx,
   register,
@@ -582,8 +555,6 @@ function OptionsField({
   control: ReturnType<typeof useForm<FormValues>>["control"];
   register: ReturnType<typeof useForm<FormValues>>["register"];
   optionsError?: string;
-  // RHF's array error type is a union (Merge<FieldError, …[]>); we only need to
-  // probe for per-row text messages, so accept the broader shape.
   optionErrors?: { text?: { message?: string } }[] | undefined | unknown;
   getOptions: (qIdx: number) => { text: string }[];
   setOptions: (opts: { text: string }[]) => void;
@@ -642,7 +613,6 @@ function OptionsField({
   );
 }
 
-/* ── Step 3: Review ────────────────────────────────────────────── */
 
 function ReviewStep({ values }: { values: FormValues }) {
   return (
@@ -730,7 +700,6 @@ function ReviewRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-/* ── Step indicator ───────────────────────────────────────────── */
 
 function StepIndicator({
   step,
@@ -791,7 +760,6 @@ function StepIndicator({
   );
 }
 
-/* ── Mode toggle (Anonymous / Signed in) ──────────────────────── */
 function ModeToggle({
   active,
   onClick,
@@ -830,7 +798,6 @@ function ModeToggle({
   );
 }
 
-/* ── Field row with label + error ─────────────────────────────── */
 function Field({
   label,
   htmlFor,
@@ -851,7 +818,6 @@ function Field({
   );
 }
 
-/* ── Live respondent preview ──────────────────────────────────── */
 function PollPreview({
   title,
   description,

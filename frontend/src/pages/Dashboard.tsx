@@ -20,9 +20,7 @@ import {
 } from "lucide-react";
 
 const cardSurface = [
-  // Light mode polish
   "bg-white border-orange-200/60 shadow-[0_4px_14px_-4px_rgba(249,115,22,0.10),0_2px_4px_-2px_rgba(15,14,46,0.06)]",
-  // Dark mode (unchanged)
   "dark:bg-[#080626] dark:border-white/10 dark:shadow-[0_1px_0_rgba(255,255,255,0.04)_inset]",
 ].join(" ");
 
@@ -150,7 +148,6 @@ export function Dashboard() {
         />
       </div>
 
-      {/* ── Tabs ───────────────────────────────────────────────── */}
       <div className="border-b border-border flex gap-1">
         <TabButton
           active={tab === "created"}
@@ -194,7 +191,6 @@ export function Dashboard() {
   );
 }
 
-/* ── Tab button ──────────────────────────────────────────────── */
 function TabButton({
   active,
   onClick,
@@ -237,7 +233,6 @@ function TabButton({
   );
 }
 
-/* ── Created-by-me section ──────────────────────────────────── */
 function CreatedSection({
   polls,
   onDelete,
@@ -322,7 +317,6 @@ function CreatedSection({
   );
 }
 
-/* ── Participated section ──────────────────────────────────── */
 function ParticipatedSection({ polls }: { polls: PollParticipationItem[] }) {
   if (polls.length === 0) {
     return (
@@ -380,7 +374,6 @@ function ParticipatedSection({ polls }: { polls: PollParticipationItem[] }) {
   );
 }
 
-/* ── Empty state ─────────────────────────────────────────────── */
 function EmptyState({
   icon: Icon,
   title,
@@ -412,7 +405,6 @@ function EmptyState({
   );
 }
 
-/* ── Stat card ───────────────────────────────────────────────── */
 function StatCard({
   label,
   value,

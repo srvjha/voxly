@@ -31,13 +31,10 @@ const baseClient: AxiosInstance = axios.create({
   baseURL: API_BASE,
   headers: {
     "Content-Type": "application/json",
-    // Skip ngrok's free-tier interstitial HTML page so the request reaches
-    // our backend (and CORS headers actually come back).
     "ngrok-skip-browser-warning": "true",
   },
 });
 
-/** Backend envelope shapes — see backend/src/utils/api-response.ts */
 interface SuccessEnvelope<T> {
   success: true;
   message: string;
@@ -46,7 +43,6 @@ interface SuccessEnvelope<T> {
 interface ErrorEnvelope {
   success: false;
   message: string;
-  /** Legacy "error" key still emitted on a few code paths */
   error?: string;
   source?: string;
   issues?: Array<{ path: string; message: string; code?: string }>;
@@ -61,7 +57,6 @@ function looksLikeEnvelope(v: unknown): v is { success: boolean } {
   );
 }
 
-/** Pull the friendliest error message out of an axios error body. */
 function extractErrorMessage(data: unknown, fallback: string): string {
   if (data && typeof data === "object") {
     const d = data as Partial<ErrorEnvelope> & { error?: string };
@@ -83,8 +78,6 @@ async function send<T>(
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
-    // Unwrap { success, message, data } → data so call sites stay unchanged.
-    // Non-envelope responses (e.g. legacy or 204 No Content) pass through.
     const body = res.data;
     if (looksLikeEnvelope(body) && body.success === true) {
       const data = (body as SuccessEnvelope<T>).data;

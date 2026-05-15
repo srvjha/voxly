@@ -1,14 +1,3 @@
-/* ──────────────────────────────────────────────────────────────────
-   HeroBackground — Voxly landing hero ambient layer.
-
-   Composition (back → front):
-     1. Soft radial gradient wash (warm orange → cool blue → base)
-     2. Mandala SVG (slow rotation, 5–6% opacity)
-     3. Two paisley-inspired blobs (orange + blue) at very low opacity
-     4. Thin jali lattice strip at the very top and bottom of the hero
-
-   Everything is decorative — pointer-events: none.
-   ────────────────────────────────────────────────────────────────── */
 
 export function HeroBackground() {
   return (
@@ -16,7 +5,6 @@ export function HeroBackground() {
       aria-hidden="true"
       className="absolute inset-0 -z-10 overflow-hidden pointer-events-none"
     >
-      {/* Radial gradient wash */}
       <div
         className="absolute inset-0"
         style={{
@@ -34,16 +22,13 @@ export function HeroBackground() {
           --hero-cool: #0D0B35;
         }
       `}</style>
-
-      {/* Paisley blob — orange, top left */}
-      {/* <div
+      <div
         className="absolute -left-32 top-10 w-[480px] h-[420px] blur-3xl opacity-70 dark:opacity-40 rounded-[60%_40%_55%_45%/55%_45%_60%_40%]"
         style={{
           background:
             "radial-gradient(ellipse at center, rgba(249, 115, 22, 0.45) 0%, rgba(249, 115, 22, 0) 70%)",
         }}
-      /> */}
-      {/* Paisley blob — blue, bottom right */}
+      />
       <div
         className="absolute -right-40 bottom-8 w-[520px] h-[440px] blur-3xl opacity-70 dark:opacity-50 rounded-[55%_45%_60%_40%/60%_40%_55%_45%]"
         style={{
@@ -52,22 +37,16 @@ export function HeroBackground() {
         }}
       />
 
-      {/* Mandala — centered, slow rotation */}
       <div className="mandala-bg">
         <Mandala />
       </div>
 
-      {/* Top + bottom jali strips */}
       <div className="absolute top-0 left-0 right-0 jali-strip" />
       <div className="absolute bottom-0 left-0 right-0 jali-strip" />
     </div>
   );
 }
 
-/* ─── Mandala SVG ─────────────────────────────────────────────────
-   Pure geometric outline — 12-petal radial symmetry with three
-   concentric rings. Stroke only, currentColor inherits theme tint.
-   ───────────────────────────────────────────────────────────────── */
 export function Mandala({
   size = 800,
   className = "",
@@ -159,7 +138,6 @@ export function Mandala({
       {radialLines}
       {petalsOuter}
       {petalsInner}
-      {/* center flower */}
       {Array.from({ length: 8 }).map((_, i) => {
         const a = (i * 45 * Math.PI) / 180;
         const x = cx + Math.cos(a) * 38;

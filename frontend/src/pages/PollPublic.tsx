@@ -194,7 +194,6 @@ export function PollPublic() {
     }
   }
 
-  /* ── Error state ─────────────────────────────────────── */
   if (error && !poll) {
     const title =
       errorStatus === 404
@@ -218,7 +217,6 @@ export function PollPublic() {
   }
   if (!poll) return <div className="text-muted-foreground">Loading…</div>;
 
-  /* ── Published results view ───────────────────────────── */
   if (poll.status === "published" && poll.tallies) {
     return (
       <div className="max-w-2xl mx-auto space-y-6">
@@ -256,7 +254,6 @@ export function PollPublic() {
     );
   }
 
-  /* ── Thank you state ──────────────────────────────────── */
   if (submitted) {
     return (
       <div className="max-w-xl mx-auto">
@@ -286,7 +283,6 @@ export function PollPublic() {
     );
   }
 
-  /* ── Inactive state ───────────────────────────────────── */
   if (poll.status !== "active") {
     return (
       <div className="max-w-xl mx-auto">
@@ -303,7 +299,6 @@ export function PollPublic() {
     );
   }
 
-  /* ── Auth-required gate ───────────────────────────────── */
   if (!poll.isAnonymous && !isSignedIn) {
     return (
       <div className="max-w-xl mx-auto">
@@ -332,13 +327,11 @@ export function PollPublic() {
     );
   }
 
-  /* ── Active response form ─────────────────────────────── */
   const mandatoryIds = poll.questions.filter((q) => q.isMandatory).map((q) => q.id);
   const allRequiredAnswered = mandatoryIds.every((qid) => Boolean(answers[qid]));
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center gap-2 flex-wrap text-xs">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/12 text-accent-600 dark:text-accent-300 border border-accent/25 px-2.5 py-0.5 font-medium">
@@ -374,7 +367,6 @@ export function PollPublic() {
         )}
       </div>
 
-      {/* Questions */}
       <div className="space-y-4 stagger-children">
         {poll.questions.map((q, idx) => (
           <Card key={q.id}>

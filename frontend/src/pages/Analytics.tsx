@@ -41,29 +41,21 @@ import {
   Globe2,
 } from "lucide-react";
 
-/* ────────────────────────────────────────────────────────────────────
-   Voxly Analytics — KPI grid + recharts bar/donut + insights.
-   All charts driven by REAL backend tallies, no fabricated data.
-   Regional/demographics blocks are honest placeholders explaining
-   what would unlock them.
-   ──────────────────────────────────────────────────────────────────── */
 
 const cardSurface = [
-  // Light mode polish
   "bg-white border-orange-200/60 shadow-[0_4px_14px_-4px_rgba(249,115,22,0.10),0_2px_4px_-2px_rgba(15,14,46,0.06)]",
-  // Dark mode (unchanged)
   "dark:bg-[#080626] dark:border-white/10 dark:shadow-[0_1px_0_rgba(255,255,255,0.04)_inset]",
 ].join(" ");
 
 const PALETTE = [
-  "#F97316", // orange-500
-  "#818CF8", // indigo-400
-  "#22D3EE", // cyan-400
-  "#FB923C", // orange-400
-  "#A5B4FC", // indigo-300
-  "#34D399", // emerald-400
-  "#F472B6", // pink-400
-  "#FBBF24", // amber-400
+  "#F97316",
+  "#818CF8",
+  "#22D3EE",
+  "#FB923C",
+  "#A5B4FC",
+  "#34D399",
+  "#F472B6",
+  "#FBBF24",
 ];
 
 export function Analytics() {
@@ -118,7 +110,6 @@ export function Analytics() {
     );
   }, [data]);
 
-  // Most-engaged question (highest totalAnswers) — drives donut & "Top question"
   const topQuestion = useMemo<PollTallyQuestion | null>(() => {
     if (!data || data.questions.length === 0) return null;
     return data.questions.reduce(
@@ -127,12 +118,10 @@ export function Analytics() {
     );
   }, [data]);
 
-  // Insights — derived facts from real data
   const insights = useMemo(() => {
     if (!data || data.questions.length === 0) return [];
     const list: Array<{ icon: typeof Trophy; tone: string; text: string }> = [];
 
-    // Most popular option across all questions
     let bestOpt: {
       qText: string;
       oText: string;
@@ -153,7 +142,6 @@ export function Analytics() {
       });
     }
 
-    // Highest-engagement question
     const mostAnswered = data.questions.reduce(
       (best, q) => (q.totalAnswers > best.totalAnswers ? q : best),
       data.questions[0],
@@ -166,7 +154,6 @@ export function Analytics() {
       });
     }
 
-    // Lowest-engagement question
     const leastAnswered = data.questions.reduce(
       (worst, q) => (q.totalAnswers < worst.totalAnswers ? q : worst),
       data.questions[0],
@@ -196,7 +183,6 @@ export function Analytics() {
     );
   if (!data) return <div className="text-muted-foreground">Loading…</div>;
 
-  /* ── Header / toolbar ──────────────────────────────────────────── */
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -240,7 +226,6 @@ export function Analytics() {
         </div>
       </div>
 
-      {/* ── KPI row ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KPI
           label="Total Responses"
@@ -278,7 +263,6 @@ export function Analytics() {
         </Card>
       ) : (
         <>
-          {/* ── Question-wise + Top question donut ──────────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-3">
             <Card className={cardSurface}>
               <CardHeader className="pb-2">
@@ -326,7 +310,6 @@ export function Analytics() {
             </Card>
           </div>
 
-          {/* ── Insights ─────────────────────────────────────────── */}
           {insights.length > 0 && (
             <Card className={cardSurface}>
               <CardHeader className="pb-2">
@@ -354,7 +337,6 @@ export function Analytics() {
             </Card>
           )}
 
-          {/* ── Regional Participation (real data via geoip) ──── */}
           <RegionalCard
             regions={data.regions}
             totalResponses={data.totalResponses}
@@ -366,9 +348,6 @@ export function Analytics() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────
-   KPI card
-   ──────────────────────────────────────────────────────────────────── */
 function KPI({
   label,
   value,
@@ -441,9 +420,6 @@ function KPI({
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────
-   Per-question horizontal bar chart (recharts)
-   ──────────────────────────────────────────────────────────────────── */
 function QuestionBarChart({
   question,
   index,
@@ -547,9 +523,6 @@ function QuestionBarChart({
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────
-   Donut chart for top question
-   ──────────────────────────────────────────────────────────────────── */
 function TopDonut({
   question,
   isDark,
@@ -574,7 +547,6 @@ function TopDonut({
     );
   }
 
-  // Identify leader
   const leader = chartData.reduce((best, d) =>
     d.value > best.value ? d : best,
   );
@@ -642,16 +614,9 @@ function TopDonut({
   );
 }
 
-// Recharts re-exports we don't need at the call site but keep imported
-// to ensure tree-shaker keeps the right modules.
 void Legend;
 
-/* ────────────────────────────────────────────────────────────────────
-   Regional Participation — top countries (real geoip data)
-   ──────────────────────────────────────────────────────────────────── */
 
-/** ISO-3166-1 alpha-2 → flag emoji. Maps the two letters to their
- *  regional-indicator codepoints. "ZZ" (our Unknown sentinel) → 🌐. */
 function flagFor(code: string): string {
   if (code === "ZZ" || code.length !== 2) return "🌐";
   const upper = code.toUpperCase();
@@ -671,7 +636,6 @@ function RegionalCard({
   totalResponses: number;
   isDark: boolean;
 }) {
-  // Sort defensively (backend already does), drop zero-counts
   const sorted = [...regions].filter((r) => r.count > 0).sort(
     (a, b) => b.count - a.count,
   );
