@@ -1,35 +1,199 @@
 @import "tailwindcss";
 
+/* Drive Tailwind's `dark:` variant off the app's own `data-theme="dark"`
+   instead of the OS `prefers-color-scheme`. The theme store toggles
+   `data-theme` on <html>, so this keeps Tailwind and the design tokens in
+   sync regardless of OS setting. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ─────────────────────────────────────────────────────────────────
+   Voxly Design System — Modern India.
+   Saffron orange + deep indigo blue, glassmorphism on hero surfaces,
+   mandala / rangoli / jali motifs used as subtle texture only.
+   ───────────────────────────────────────────────────────────────── */
+
 @theme {
-  --color-background: hsl(222 47% 6%);
-  --color-foreground: hsl(210 30% 96%);
+  /* ── Saffron Orange ─────────────────────────────────────────── */
+  --color-orange-50:  #FFF7ED;
+  --color-orange-100: #FFEDD5;
+  --color-orange-200: #FED7AA;
+  --color-orange-300: #FDBA74;
+  --color-orange-400: #FB923C;
+  --color-orange-500: #F97316;
+  --color-orange-600: #EA6A00;
+  --color-orange-700: #C2550A;
+  --color-orange-800: #9A3E08;
+  --color-orange-900: #7C3207;
 
-  --color-card: hsl(222 42% 10%);
-  --color-card-foreground: hsl(210 30% 96%);
+  /* ── Deep Indigo Blue ───────────────────────────────────────── */
+  --color-blue-50:   #EEF2FF;
+  --color-blue-100:  #E0E7FF;
+  --color-blue-200:  #C7D2FE;
+  --color-blue-300:  #A5B4FC;
+  --color-blue-400:  #818CF8;
+  --color-blue-500:  #3730A3;
+  --color-blue-600:  #2D27A0;
+  --color-blue-700:  #231E8F;
+  --color-blue-800:  #1A177A;
+  --color-blue-900:  #0F0E5C;
+  --color-blue-950:  #07063D;
 
-  --color-popover: hsl(222 42% 10%);
-  --color-popover-foreground: hsl(210 30% 96%);
+  /* ── Brand alias (kept for back-compat with existing pages) ── */
+  --color-brand-50:  #FFF7ED;
+  --color-brand-100: #FFEDD5;
+  --color-brand-200: #FED7AA;
+  --color-brand-300: #FDBA74;
+  --color-brand-400: #FB923C;
+  --color-brand-500: #F97316;
+  --color-brand-600: #EA6A00;
+  --color-brand-700: #C2550A;
+  --color-brand-800: #9A3E08;
+  --color-brand-900: #7C3207;
+  --color-brand-950: #4A1D04;
 
-  --color-primary: hsl(217 91% 60%);
-  --color-primary-foreground: hsl(222 47% 8%);
+  --color-accent-50:  #EEF2FF;
+  --color-accent-100: #E0E7FF;
+  --color-accent-200: #C7D2FE;
+  --color-accent-300: #A5B4FC;
+  --color-accent-400: #818CF8;
+  --color-accent-500: #3730A3;
+  --color-accent-600: #2D27A0;
+  --color-accent-700: #231E8F;
 
-  --color-secondary: hsl(222 35% 16%);
-  --color-secondary-foreground: hsl(210 30% 96%);
+  /* ── Light Mode Surfaces ────────────────────────────────────── */
+  --color-background: #FAFAF8;
+  --color-foreground: #0F0E2E;
 
-  --color-muted: hsl(222 35% 14%);
-  --color-muted-foreground: hsl(215 20% 65%);
+  --color-surface:  #FFFFFF;
+  --color-elevated: #F5F3EF;
+  --color-sunken:   #EEF0FC;
 
-  --color-accent: hsl(222 35% 18%);
-  --color-accent-foreground: hsl(210 30% 96%);
+  --color-card: #FFFFFF;
+  --color-card-foreground: #0F0E2E;
 
-  --color-destructive: hsl(0 75% 55%);
-  --color-destructive-foreground: hsl(210 30% 96%);
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #0F0E2E;
 
-  --color-border: hsl(222 30% 20%);
-  --color-input: hsl(222 30% 16%);
-  --color-ring: hsl(217 91% 60%);
+  --color-primary: #F97316;
+  --color-primary-foreground: #FFFFFF;
 
-  --radius: 0.625rem;
+  --color-secondary: #F5F3EF;
+  --color-secondary-foreground: #0F0E2E;
+
+  --color-muted: #F5F3EF;
+  --color-muted-foreground: #4B4880;
+
+  --color-accent: #3730A3;
+  --color-accent-foreground: #FFFFFF;
+
+  --color-destructive: #DC2626;
+  --color-destructive-foreground: #FFFFFF;
+
+  --color-success: #059669;
+  --color-warning: #D97706;
+
+  --color-border:        #D9D6E2;
+  --color-border-strong: #B8B3CB;
+  --color-input:  #FFFFFF;
+  --color-ring:   #F97316;
+
+  /* ── Warm / cool tinted surfaces ────────────────────────────── */
+  --color-bg-warm: #FEF3E2;
+  --color-bg-cool: #EEF0FC;
+
+  /* ── Glassmorphism (light) ──────────────────────────────────── */
+  --glass-bg:      rgba(255, 255, 255, 0.72);
+  --glass-border:  rgba(255, 255, 255, 0.55);
+  --glass-shadow:  rgba(55, 48, 163, 0.18);
+
+  /* ── Typography ─────────────────────────────────────────────── */
+  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans:    "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* ── Radii ──────────────────────────────────────────────────── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+
+  /* ── Shadows ────────────────────────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(15, 14, 46, 0.05);
+  --shadow-sm: 0 1px 3px rgba(15, 14, 46, 0.08), 0 1px 2px rgba(15, 14, 46, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 14, 46, 0.08), 0 2px 4px rgba(15, 14, 46, 0.04);
+  --shadow-lg: 0 12px 28px rgba(15, 14, 46, 0.10), 0 4px 8px rgba(15, 14, 46, 0.04);
+  --shadow-xl: 0 24px 48px rgba(15, 14, 46, 0.12), 0 8px 12px rgba(15, 14, 46, 0.04);
+  --shadow-brand: 0 0 0 3px rgba(249, 115, 22, 0.20);
+  --shadow-live:  0 0 0 0 rgba(249, 115, 22, 0.45);
+  --shadow-orange: 0 6px 24px rgba(249, 115, 22, 0.40);
+  --shadow-glass: 0 8px 32px rgba(55, 48, 163, 0.12);
+
+  /* ── Motion ─────────────────────────────────────────────────── */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out:     cubic-bezier(0, 0, 0.2, 1);
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --animate-live-pulse: livePulse 2s ease-in-out infinite;
+  --animate-fade-in:    fadeSlideIn 300ms cubic-bezier(0, 0, 0.2, 1) both;
+  --animate-bar-fill:   barFill 800ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  --animate-mandala:    mandalaRotate 120s linear infinite;
+}
+
+/* ── Dark Mode Surfaces ─────────────────────────────────────────── */
+[data-theme="dark"] {
+  --color-background: #060520;
+  --color-foreground: #F0EEFF;
+
+  --color-surface:  #0D0B35;
+  --color-elevated: #141050;
+  --color-sunken:   #07063D;
+
+  --color-card: #0D0B35;
+  --color-card-foreground: #F0EEFF;
+
+  --color-popover: #141050;
+  --color-popover-foreground: #F0EEFF;
+
+  --color-primary: #F97316;
+  --color-primary-foreground: #FFFFFF;
+
+  --color-secondary: #141050;
+  --color-secondary-foreground: #F0EEFF;
+
+  --color-muted: #141050;
+  --color-muted-foreground: #A09FD0;
+
+  --color-accent: #818CF8;
+  --color-accent-foreground: #07063D;
+
+  --color-destructive: #F87171;
+  --color-destructive-foreground: #FFFFFF;
+
+  --color-success: #34D399;
+  --color-warning: #FBBF24;
+
+  --color-border:        #1F1B55;
+  --color-border-strong: #2D2A6B;
+  --color-input: #0D0B35;
+  --color-ring:  #F97316;
+
+  --color-bg-warm: #0B0930;
+  --color-bg-cool: #0F0E5C;
+
+  --glass-bg:     rgba(13, 11, 53, 0.60);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: rgba(249, 115, 22, 0.15);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.50);
+  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.60);
+  --shadow-brand: 0 0 0 3px rgba(249, 115, 22, 0.30);
+  --shadow-orange: 0 6px 24px rgba(249, 115, 22, 0.45);
+  --shadow-glass: 0 8px 32px rgba(249, 115, 22, 0.10);
 }
 
 @layer base {
@@ -43,17 +207,207 @@
     height: 100%;
   }
 
+  html {
+    color-scheme: light;
+  }
+  [data-theme="dark"] {
+    color-scheme: dark;
+  }
+
   body {
     margin: 0;
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-      sans-serif;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: var(--font-body);
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
   }
 
   ::selection {
-    background-color: hsl(217 91% 60% / 0.35);
+    background-color: rgba(249, 115, 22, 0.25);
+  }
+}
+
+/* ── Keyframes ─────────────────────────────────────────────────── */
+@keyframes livePulse {
+  0%   { box-shadow: 0 0 0 0   rgba(249, 115, 22, 0.45); }
+  70%  { box-shadow: 0 0 0 8px rgba(249, 115, 22, 0);    }
+  100% { box-shadow: 0 0 0 0   rgba(249, 115, 22, 0);    }
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes barFill {
+  from { width: 0%; }
+  to   { width: var(--fill-width, 0%); }
+}
+
+@keyframes mandalaRotate {
+  from { transform: translate(-50%, -50%) rotate(0deg);   }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ── Live indicator dot ─────────────────────────────────────────── */
+.live-dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: #F97316;
+  animation: livePulse 2s ease-in-out infinite;
+}
+
+/* ── Gradient text helpers ──────────────────────────────────────── */
+.gradient-orange {
+  background: linear-gradient(135deg, #F97316, #EA6A00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+.gradient-blue {
+  background: linear-gradient(135deg, #3730A3, #818CF8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+[data-theme="dark"] .gradient-blue {
+  background: linear-gradient(135deg, #818CF8, #C7D2FE);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Glassmorphism surfaces ─────────────────────────────────────── */
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 24px 64px var(--glass-shadow);
+}
+
+/* ── Mandala radial background ──────────────────────────────────── */
+.mandala-bg {
+  position: absolute;
+  width: 800px;
+  height: 800px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.05;
+  pointer-events: none;
+  animation: mandalaRotate 120s linear infinite;
+  color: var(--color-blue-500);
+}
+[data-theme="dark"] .mandala-bg {
+  color: var(--color-orange-500);
+  opacity: 0.06;
+}
+@media (max-width: 768px) {
+  .mandala-bg { display: none; }
+}
+
+/* ── Rangoli dot grid ───────────────────────────────────────────── */
+.rangoli-dots {
+  background-image: radial-gradient(circle, var(--color-orange-400) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.14;
+}
+[data-theme="dark"] .rangoli-dots {
+  opacity: 0.06;
+}
+
+/* ── Jali lattice border strip ──────────────────────────────────── */
+.jali-strip {
+  background-image:
+    linear-gradient(45deg, rgba(249, 115, 22, 0.20) 25%, transparent 25%, transparent 75%, rgba(249, 115, 22, 0.20) 75%),
+    linear-gradient(45deg, rgba(249, 115, 22, 0.20) 25%, transparent 25%, transparent 75%, rgba(249, 115, 22, 0.20) 75%);
+  background-size: 12px 12px;
+  background-position: 0 0, 6px 6px;
+  height: 2px;
+  width: 100%;
+}
+
+/* ── Hero stagger ──────────────────────────────────────────────── */
+.hero-badge    { animation: fadeSlideUp 400ms ease-out 0ms   both; }
+.hero-headline { animation: fadeSlideUp 400ms ease-out 100ms both; }
+.hero-sub      { animation: fadeSlideUp 400ms ease-out 200ms both; }
+.hero-ctas     { animation: fadeSlideUp 400ms ease-out 300ms both; }
+.hero-proof    { animation: fadeSlideUp 400ms ease-out 400ms both; }
+.hero-card     { animation: fadeSlideUp 600ms ease-out 500ms both; }
+
+.bar-fill { animation: barFill 800ms cubic-bezier(0.4, 0, 0.2, 1) 700ms both; }
+
+/* ── Reveal-on-scroll utility (paired with IntersectionObserver) ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 500ms ease, transform 500ms ease;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Stagger helper for generic lists ───────────────────────────── */
+.stagger-children > * {
+  animation: fadeSlideIn 300ms var(--ease-out) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms;   }
+.stagger-children > *:nth-child(2) { animation-delay: 60ms;  }
+.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+
+/* ── Subtle background grid (kept for inner-app pages) ──────────── */
+.grid-bg {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--color-foreground) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--color-foreground) 6%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: -1px -1px;
+}
+
+/* ── Hero waveform scroll (kept available for inner pages) ──────── */
+@keyframes wave-scroll {
+  from { transform: translateX(0);    }
+  to   { transform: translateX(-50%); }
+}
+.wave-scroll {
+  animation: wave-scroll 14s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave-scroll,
+  .live-dot,
+  .mandala-bg,
+  .bar-fill,
+  .stagger-children > *,
+  .hero-badge,
+  .hero-headline,
+  .hero-sub,
+  .hero-ctas,
+  .hero-proof,
+  .hero-card {
+    animation: none !important;
   }
 }

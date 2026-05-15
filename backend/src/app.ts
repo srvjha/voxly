@@ -9,6 +9,10 @@ import { HttpError } from "./http-error.js";
 function createExpressApplication(): Express {
   const app = express();
 
+  // Behind ngrok / a reverse proxy, req.ip would otherwise be the proxy's IP.
+  // Trusting proxies makes Express read X-Forwarded-For for the real client IP.
+  app.set("trust proxy", true);
+
   const allowedOrigins = (process.env.CORS_ORIGINS ?? "http://localhost:5173")
     .split(",")
     .map((s) => s.trim())

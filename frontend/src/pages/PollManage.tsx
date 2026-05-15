@@ -8,9 +8,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { StatusBadge, MandatoryBadge } from "@/components/ui/badge";
 import { useApi, ApiError } from "@/lib/api";
 import type { Poll } from "@/types";
-import { Copy, ExternalLink, Pencil, Rocket, Send } from "lucide-react";
+import {
+  Copy,
+  ExternalLink,
+  Pencil,
+  Rocket,
+  Send,
+  BarChart3,
+  Check,
+  AlertCircle,
+  EyeOff,
+  ShieldCheck,
+  Clock,
+} from "lucide-react";
 
 export function PollManage() {
   const { id } = useParams();
@@ -39,8 +52,10 @@ export function PollManage() {
 
   if (error)
     return (
-      <Card>
-        <CardContent className="pt-6 text-destructive">{error}</CardContent>
+      <Card className="border-destructive/30">
+        <CardContent className="pt-6 text-destructive text-sm">
+          {error}
+        </CardContent>
       </Card>
     );
   if (!poll) return <div className="text-muted-foreground">Loading…</div>;
@@ -60,21 +75,49 @@ export function PollManage() {
     }
   }
 
+  const statusHint = {
+    draft:
+      "This poll is a draft. Activate it to start collecting responses.",
+    active: "Anyone with this link can respond right now.",
+    expired: "Poll has expired — no new responses accepted.",
+    published:
+      "Results are published. Anyone with the link sees the read-only tally.",
+  }[poll.status];
+
   return (
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight">{poll.title}</h1>
-            <span className="text-xs font-medium px-2 py-0.5 rounded-md capitalize bg-primary/15 text-primary">
-              {poll.status}
-            </span>
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="font-display text-3xl font-bold tracking-tight">
+              {poll.title}
+            </h1>
+            <StatusBadge status={poll.status} withDot />
           </div>
           {poll.description && (
-            <p className="text-muted-foreground text-sm mt-1">
+            <p className="text-muted-foreground text-sm max-w-prose">
               {poll.description}
             </p>
           )}
+          <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
+            <span className="inline-flex items-center gap-1">
+              {poll.isAnonymous ? (
+                <>
+                  <EyeOff className="h-3.5 w-3.5" /> Anonymous
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="h-3.5 w-3.5" /> Signed-in only
+                </>
+              )}
+            </span>
+            {poll.expiresAt && (
+              <span className="inline-flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5" />
+                Expires {new Date(poll.expiresAt).toLocaleString()}
+              </span>
+            )}
+          </div>
         </div>
         {poll.status === "draft" && (
           <Button
@@ -89,19 +132,11 @@ export function PollManage() {
       <Card>
         <CardHeader>
           <CardTitle>Share link</CardTitle>
-          <CardDescription>
-            {poll.status === "draft"
-              ? "Activate the poll first to start collecting responses."
-              : poll.status === "active"
-                ? "Anyone with this link can answer."
-                : poll.status === "published"
-                  ? "Anyone with this link will see the published results."
-                  : "Poll has expired — no new responses accepted."}
-          </CardDescription>
+          <CardDescription>{statusHint}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center gap-2">
-            <code className="flex-1 truncate rounded-md border border-border bg-input px-3 py-2 text-sm">
+            <code className="flex-1 truncate rounded-md border border-border bg-elevated px-3 py-2 text-sm font-mono text-foreground/90">
               {shareUrl}
             </code>
             <Button
@@ -114,16 +149,22 @@ export function PollManage() {
               }}
               title="Copy"
             >
-              <Copy className="h-4 w-4" />
+              {copied ? (
+                <Check className="h-4 w-4 text-success" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
             </Button>
             <Link to={`/p/${poll.id}`} target="_blank" rel="noreferrer">
-              <Button variant="outline" size="icon" title="Open">
+              <Button variant="outline" size="icon" title="Open in new tab">
                 <ExternalLink className="h-4 w-4" />
               </Button>
             </Link>
           </div>
           {copied && (
-            <div className="text-xs text-emerald-400">Copied!</div>
+            <div className="text-xs text-success inline-flex items-center gap-1">
+              <Check className="h-3 w-3" /> Copied to clipboard
+            </div>
           )}
         </CardContent>
       </Card>
@@ -131,18 +172,24 @@ export function PollManage() {
       <Card>
         <CardHeader>
           <CardTitle>Actions</CardTitle>
+          <CardDescription>
+            What you can do next depends on the poll's status.
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           {poll.status === "draft" && (
             <Button
               disabled={busy}
-              onClick={() => action("activate", () => api.activatePoll(poll.id))}
+              onClick={() =>
+                action("activate", () => api.activatePoll(poll.id))
+              }
             >
-              <Rocket className="h-4 w-4" /> Activate
+              <Rocket className="h-4 w-4" /> Activate poll
             </Button>
           )}
           {(poll.status === "active" || poll.status === "expired") && (
             <Button
+              variant="accent"
               disabled={busy}
               onClick={() => action("publish", () => api.publishPoll(poll.id))}
             >
@@ -150,7 +197,9 @@ export function PollManage() {
             </Button>
           )}
           <Link to={`/polls/${poll.id}/analytics`}>
-            <Button variant="outline">View analytics</Button>
+            <Button variant="outline">
+              <BarChart3 className="h-4 w-4" /> View analytics
+            </Button>
           </Link>
         </CardContent>
       </Card>
@@ -160,23 +209,41 @@ export function PollManage() {
           <CardTitle>Questions</CardTitle>
           <CardDescription>
             {poll.questions.length} question
-            {poll.questions.length === 1 ? "" : "s"} • Single choice each
+            {poll.questions.length === 1 ? "" : "s"} · Single choice each
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {poll.questions.map((q, idx) => (
-            <div key={q.id} className="border border-border rounded-lg p-4">
-              <div className="font-medium">
-                {idx + 1}. {q.text}
-                {!q.isMandatory && (
-                  <span className="ml-2 text-xs text-muted-foreground">
-                    (optional)
+            <div
+              key={q.id}
+              className="rounded-lg border border-border bg-elevated/40 p-4"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="font-medium text-foreground leading-snug">
+                  <span className="font-mono text-xs text-muted-foreground mr-2">
+                    Q{idx + 1}
+                  </span>
+                  {q.text}
+                </div>
+                {q.isMandatory ? (
+                  <MandatoryBadge />
+                ) : (
+                  <span className="text-[10px] uppercase tracking-wide font-mono text-muted-foreground">
+                    Optional
                   </span>
                 )}
               </div>
-              <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-                {q.options.map((o) => (
-                  <li key={o.id}>• {o.text}</li>
+              <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-sm">
+                {q.options.map((o, oIdx) => (
+                  <li
+                    key={o.id}
+                    className="flex items-center gap-2 text-muted-foreground"
+                  >
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-surface border border-border font-mono text-[10px]">
+                      {String.fromCharCode(65 + oIdx)}
+                    </span>
+                    <span className="text-foreground/90">{o.text}</span>
+                  </li>
                 ))}
               </ul>
             </div>
@@ -185,9 +252,10 @@ export function PollManage() {
       </Card>
 
       {error && (
-        <Card>
-          <CardContent className="pt-6 text-destructive">{error}</CardContent>
-        </Card>
+        <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/8 p-4 text-sm text-destructive">
+          <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
       )}
     </div>
   );

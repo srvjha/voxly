@@ -62,11 +62,24 @@ export interface PollListItem {
   responseCount: number;
 }
 
+export interface PollParticipationItem extends PollListItem {
+  /** When the current user submitted their response */
+  submittedAt: string;
+}
+
+export interface PollRegionTally {
+  country: string;
+  name: string;
+  count: number;
+  percentage: number;
+}
+
 export interface Analytics {
   pollId: string;
   status: PollStatus;
   totalResponses: number;
   questions: PollTallyQuestion[];
+  regions: PollRegionTally[];
 }
 
 export interface QuestionDraft {

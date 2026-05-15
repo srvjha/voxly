@@ -40,6 +40,20 @@ export async function listMyPolls(
   }
 }
 
+export async function listParticipatedPolls(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const user = requireDbUser(req);
+    const polls = await service.listParticipatedPolls(user.id);
+    res.json({ polls });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function getPoll(
   req: Request,
   res: Response,

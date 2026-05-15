@@ -1,4 +1,6 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import geoip from "geoip-lite";
+import { clerkClient } from "@clerk/express";
 import { db } from "../../db/index.js";
 import {
   options,
@@ -6,13 +8,99 @@ import {
   polls,
   questionAnswers,
   questions,
+  users,
 } from "../../db/schema.js";
 import { HttpError } from "../../http-error.js";
+import { broadcastPollUpdate } from "../../realtime/io.js";
 import type {
   CreatePollInput,
   SubmitResponseInput,
   UpdatePollInput,
 } from "./polls.schema.js";
+
+/* ── Country aggregation helpers ─────────────────────────────────── */
+
+// ISO-3166-1 alpha-2 → English name. Small inline table covers the
+// common cases; anything else falls back to the raw country code so the
+// frontend can still display something useful.
+const COUNTRY_NAMES: Record<string, string> = {
+  IN: "India", US: "United States", GB: "United Kingdom", CA: "Canada",
+  AU: "Australia", DE: "Germany", FR: "France", ES: "Spain", IT: "Italy",
+  NL: "Netherlands", BR: "Brazil", MX: "Mexico", AR: "Argentina", JP: "Japan",
+  KR: "South Korea", CN: "China", SG: "Singapore", MY: "Malaysia", PH: "Philippines",
+  ID: "Indonesia", TH: "Thailand", VN: "Vietnam", PK: "Pakistan", BD: "Bangladesh",
+  LK: "Sri Lanka", NP: "Nepal", AE: "United Arab Emirates", SA: "Saudi Arabia",
+  IL: "Israel", TR: "Turkey", EG: "Egypt", ZA: "South Africa", NG: "Nigeria",
+  KE: "Kenya", RU: "Russia", UA: "Ukraine", PL: "Poland", SE: "Sweden",
+  NO: "Norway", FI: "Finland", DK: "Denmark", IE: "Ireland", PT: "Portugal",
+  CH: "Switzerland", AT: "Austria", BE: "Belgium", GR: "Greece", CZ: "Czechia",
+  RO: "Romania", HU: "Hungary", NZ: "New Zealand",
+};
+
+function normalizeIp(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const ip = raw.trim();
+  if (!ip) return null;
+  // X-Forwarded-For style: first entry is the client
+  const first = ip.split(",")[0]!.trim();
+  // IPv4-mapped IPv6 prefix (::ffff:1.2.3.4)
+  if (first.startsWith("::ffff:")) return first.slice(7);
+  return first;
+}
+
+function isPrivateIp(ip: string): boolean {
+  return (
+    ip === "127.0.0.1" ||
+    ip === "::1" ||
+    ip.startsWith("10.") ||
+    ip.startsWith("192.168.") ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(ip) ||
+    ip.startsWith("fc") || // IPv6 unique-local
+    ip.startsWith("fd") ||
+    ip.startsWith("fe80:")
+  );
+}
+
+function lookupCountry(rawIp: string | null | undefined): string | null {
+  const ip = normalizeIp(rawIp);
+  if (!ip) return null;
+  if (isPrivateIp(ip)) return null;
+  const hit = geoip.lookup(ip);
+  return hit?.country ?? null;
+}
+
+/* Resolve country for an authenticated respondent via Clerk's session
+   activity (server-side IP geolocation done by Clerk).
+   Returns null if the user has no sessions, no activity country, or the
+   Clerk call fails (we just degrade silently). */
+async function countryFromClerk(clerkId: string): Promise<string | null> {
+  try {
+    // SDK returns a paginated shape on newer versions; older returns array.
+    const resp = (await clerkClient.sessions.getSessionList({
+      userId: clerkId,
+    })) as unknown;
+
+    const sessions: Array<{
+      lastActiveAt?: number;
+      latestActivity?: { country?: string };
+    }> = Array.isArray(resp)
+      ? (resp as Array<{ lastActiveAt?: number; latestActivity?: { country?: string } }>)
+      : ((resp as { data?: unknown }).data as Array<{
+          lastActiveAt?: number;
+          latestActivity?: { country?: string };
+        }>) ?? [];
+
+    if (!sessions.length) return null;
+
+    const sorted = [...sessions].sort(
+      (a, b) => (b.lastActiveAt ?? 0) - (a.lastActiveAt ?? 0),
+    );
+    const country = sorted[0]?.latestActivity?.country;
+    return country ? country.toUpperCase() : null;
+  } catch {
+    return null;
+  }
+}
 
 type PollRow = typeof polls.$inferSelect;
 type QuestionRow = typeof questions.$inferSelect;
@@ -191,6 +279,39 @@ export async function listMyPolls(creatorId: string) {
   return rows.map((r) => ({ ...r.poll, responseCount: r.responseCount }));
 }
 
+/* Polls the user has responded to (as a respondent — signed-in only).
+   Anonymous responses can't be attributed back to a user account, so they
+   aren't included in this history. */
+export async function listParticipatedPolls(respondentId: string) {
+  const rows = await db
+    .select({
+      poll: polls,
+      submittedAt: pollResponses.submittedAt,
+      responseCount: sql<number>`(SELECT count(*)::int FROM ${pollResponses} pr2 WHERE pr2.poll_id = ${polls.id})`,
+    })
+    .from(pollResponses)
+    .innerJoin(polls, eq(polls.id, pollResponses.pollId))
+    .where(eq(pollResponses.respondentId, respondentId))
+    .orderBy(desc(pollResponses.submittedAt));
+
+  // De-duplicate (one response per poll already enforced for signed-in, but be safe)
+  const seen = new Set<string>();
+  const out: Array<typeof rows[number]["poll"] & {
+    responseCount: number;
+    submittedAt: Date;
+  }> = [];
+  for (const r of rows) {
+    if (seen.has(r.poll.id)) continue;
+    seen.add(r.poll.id);
+    out.push({
+      ...r.poll,
+      responseCount: r.responseCount,
+      submittedAt: r.submittedAt,
+    });
+  }
+  return out;
+}
+
 export async function getPoll(
   pollId: string,
   viewerDbUserId: string | null,
@@ -321,8 +442,8 @@ export async function submitResponse(
   }
 
   try {
-    return await db.transaction(async (tx) => {
-      const [resp] = await tx
+    const resp = await db.transaction(async (tx) => {
+      const [inserted] = await tx
         .insert(pollResponses)
         .values({
           pollId,
@@ -332,18 +453,21 @@ export async function submitResponse(
         })
         .returning();
 
-      if (!resp) throw new HttpError(500, "Failed to insert response");
+      if (!inserted) throw new HttpError(500, "Failed to insert response");
 
       await tx.insert(questionAnswers).values(
         payload.answers.map((a) => ({
-          responseId: resp.id,
+          responseId: inserted.id,
           questionId: a.questionId,
           optionId: a.optionId,
         })),
       );
 
-      return resp;
+      return inserted;
     });
+
+    broadcastPollUpdate(pollId);
+    return resp;
   } catch (err) {
     const code = (err as { code?: string })?.code;
     if (code === "23505") {
@@ -397,7 +521,88 @@ async function computeTallies(pollId: string, full: PollWithStructure) {
     };
   });
 
-  return { totalResponses, questions: questionsOut };
+  // Country aggregation:
+  //   • Authenticated respondent → Clerk's latest session activity country
+  //   • Anonymous respondent (or Clerk miss) → geoip on stored IP
+  //   • Both miss → "Unknown" bucket
+  const respRows = await db
+    .select({
+      ipAddress: pollResponses.ipAddress,
+      respondentId: pollResponses.respondentId,
+    })
+    .from(pollResponses)
+    .where(eq(pollResponses.pollId, pollId));
+
+  // Map our user IDs → clerkId for the authenticated respondents
+  const respondentIds = Array.from(
+    new Set(
+      respRows.map((r) => r.respondentId).filter((v): v is string => !!v),
+    ),
+  );
+
+  const clerkIdByUserId = new Map<string, string>();
+  if (respondentIds.length > 0) {
+    const userRows = await db
+      .select({ id: users.id, clerkId: users.clerkId })
+      .from(users)
+      .where(inArray(users.id, respondentIds));
+    for (const u of userRows) clerkIdByUserId.set(u.id, u.clerkId);
+  }
+
+  // Cache Clerk country lookups per clerkId so each unique user is fetched once
+  const clerkCountryCache = new Map<string, string | null>();
+  async function clerkCountryFor(userId: string): Promise<string | null> {
+    const clerkId = clerkIdByUserId.get(userId);
+    if (!clerkId) return null;
+    if (clerkCountryCache.has(clerkId)) return clerkCountryCache.get(clerkId)!;
+    const c = await countryFromClerk(clerkId);
+    clerkCountryCache.set(clerkId, c);
+    return c;
+  }
+
+  const countryCounts = new Map<string, number>();
+  let unknown = 0;
+  for (const r of respRows) {
+    let code: string | null = null;
+    if (r.respondentId) {
+      code = await clerkCountryFor(r.respondentId);
+    }
+    if (!code) code = lookupCountry(r.ipAddress);
+    if (!code) {
+      unknown += 1;
+      continue;
+    }
+    countryCounts.set(code, (countryCounts.get(code) ?? 0) + 1);
+  }
+
+  const regionsResolved = Array.from(countryCounts.entries())
+    .map(([code, count]) => ({
+      country: code,
+      name: COUNTRY_NAMES[code] ?? code,
+      count,
+      percentage:
+        totalResponses > 0
+          ? Math.round((count / totalResponses) * 1000) / 10
+          : 0,
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  const regions = unknown > 0
+    ? [
+        ...regionsResolved,
+        {
+          country: "ZZ",
+          name: "Unknown",
+          count: unknown,
+          percentage:
+            totalResponses > 0
+              ? Math.round((unknown / totalResponses) * 1000) / 10
+              : 0,
+        },
+      ]
+    : regionsResolved;
+
+  return { totalResponses, questions: questionsOut, regions };
 }
 
 export async function getAnalytics(pollId: string, creatorId: string) {

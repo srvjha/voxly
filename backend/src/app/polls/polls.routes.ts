@@ -14,6 +14,7 @@ const router: RouterType = Router();
 
 router.post("/", validate({ body: createPollBody }), loadDbUser, ctrl.createPoll);
 router.get("/", loadDbUser, ctrl.listMyPolls);
+router.get("/participated", loadDbUser, ctrl.listParticipatedPolls);
 
 router.get(
   "/:id",
