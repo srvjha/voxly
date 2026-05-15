@@ -22,13 +22,7 @@ export function HeroBackground() {
           --hero-cool: #0D0B35;
         }
       `}</style>
-      <div
-        className="absolute -left-32 top-10 w-[480px] h-[420px] blur-3xl opacity-70 dark:opacity-40 rounded-[60%_40%_55%_45%/55%_45%_60%_40%]"
-        style={{
-          background:
-            "radial-gradient(ellipse at center, rgba(249, 115, 22, 0.45) 0%, rgba(249, 115, 22, 0) 70%)",
-        }}
-      />
+     
       <div
         className="absolute -right-40 bottom-8 w-[520px] h-[440px] blur-3xl opacity-70 dark:opacity-50 rounded-[55%_45%_60%_40%/60%_40%_55%_45%]"
         style={{
