@@ -348,7 +348,6 @@ export function Analytics() {
 
           <VoterBreakdownCard
             analytics={data}
-            isDark={isDark}
           />
         </>
       )}
@@ -731,10 +730,8 @@ function RegionalCard({
 
 function VoterBreakdownCard({
   analytics,
-  isDark,
 }: {
   analytics: AnalyticsT;
-  isDark: boolean;
 }) {
   const [search, setSearch] = useState("");
 
