@@ -76,9 +76,20 @@ export interface PollRegionTally {
 export interface Analytics {
   pollId: string;
   status: PollStatus;
+  isAnonymous: boolean;
   totalResponses: number;
   questions: PollTallyQuestion[];
   regions: PollRegionTally[];
+  voterResponses?: Array<{
+    responseId: string;
+    userName: string | null;
+    userEmail: string;
+    submittedAt: string;
+    answers: Array<{
+      questionId: string;
+      optionId: string;
+    }>;
+  }>;
 }
 
 export interface QuestionDraft {

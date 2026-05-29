@@ -586,6 +586,17 @@ async function computeTallies(pollId: string, full: PollWithStructure) {
   return { totalResponses, questions: questionsOut, regions };
 }
 
+export interface VoterResponse {
+  responseId: string;
+  userName: string | null;
+  userEmail: string;
+  submittedAt: Date;
+  answers: Array<{
+    questionId: string;
+    optionId: string;
+  }>;
+}
+
 export async function getAnalytics(pollId: string, creatorId: string) {
   const full = await loadPollFull(pollId);
   if (!full) throw new HttpError(404, "Poll not found");
@@ -593,10 +604,54 @@ export async function getAnalytics(pollId: string, creatorId: string) {
     throw new HttpError(403, "Not the poll creator");
 
   const tallies = await computeTallies(pollId, full);
+
+  let voterResponses: VoterResponse[] | undefined = undefined;
+
+  if (!full.isAnonymous) {
+    const responsesWithAnswers = await db
+      .select({
+        responseId: pollResponses.id,
+        submittedAt: pollResponses.submittedAt,
+        userName: users.name,
+        userEmail: users.email,
+        questionId: questionAnswers.questionId,
+        optionId: questionAnswers.optionId,
+      })
+      .from(pollResponses)
+      .innerJoin(users, eq(pollResponses.respondentId, users.id))
+      .innerJoin(
+        questionAnswers,
+        eq(questionAnswers.responseId, pollResponses.id),
+      )
+      .where(eq(pollResponses.pollId, pollId));
+
+    const voterMap = new Map<string, VoterResponse>();
+
+    for (const row of responsesWithAnswers) {
+      if (!voterMap.has(row.responseId)) {
+        voterMap.set(row.responseId, {
+          responseId: row.responseId,
+          userName: row.userName,
+          userEmail: row.userEmail,
+          submittedAt: row.submittedAt,
+          answers: [],
+        });
+      }
+      voterMap.get(row.responseId)!.answers.push({
+        questionId: row.questionId,
+        optionId: row.optionId,
+      });
+    }
+
+    voterResponses = Array.from(voterMap.values());
+  }
+
   return {
     pollId,
     status: full.status,
+    isAnonymous: full.isAnonymous,
     ...tallies,
+    voterResponses,
   };
 }
 

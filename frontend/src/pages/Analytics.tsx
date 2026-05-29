@@ -13,6 +13,7 @@ import {
   YAxis,
 } from "recharts";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -39,6 +40,8 @@ import {
   TrendingDown,
   AlertCircle,
   Globe2,
+  Lock,
+  Search,
 } from "lucide-react";
 
 
@@ -340,6 +343,11 @@ export function Analytics() {
           <RegionalCard
             regions={data.regions}
             totalResponses={data.totalResponses}
+            isDark={isDark}
+          />
+
+          <VoterBreakdownCard
+            analytics={data}
             isDark={isDark}
           />
         </>
@@ -716,6 +724,177 @@ function RegionalCard({
           Country resolved server-side via the respondent's IP (geoip-lite).
           Private/local IPs bucket into Unknown.
         </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function VoterBreakdownCard({
+  analytics,
+  isDark,
+}: {
+  analytics: AnalyticsT;
+  isDark: boolean;
+}) {
+  const [search, setSearch] = useState("");
+
+  if (analytics.isAnonymous) {
+    return (
+      <Card className={cardSurface}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Lock className="h-4 w-4 text-orange-500" />
+            Detailed Voter Choices
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-2 text-sm text-muted-foreground flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+          Voter details are anonymous. This poll is configured to not collect identifying information for voter responses.
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const voterResponses = analytics.voterResponses ?? [];
+
+  const filteredResponses = useMemo(() => {
+    if (!search.trim()) return voterResponses;
+    const term = search.toLowerCase();
+    return voterResponses.filter(
+      (r) =>
+        (r.userName && r.userName.toLowerCase().includes(term)) ||
+        r.userEmail.toLowerCase().includes(term)
+    );
+  }, [voterResponses, search]);
+
+  const questionOptionMap = useMemo(() => {
+    const qMap = new Map<string, Map<string, string>>();
+    for (const q of analytics.questions) {
+      const oMap = new Map<string, string>();
+      for (const o of q.options) {
+        oMap.set(o.optionId, o.text);
+      }
+      qMap.set(q.questionId, oMap);
+    }
+    return qMap;
+  }, [analytics.questions]);
+
+  return (
+    <Card className={cardSurface}>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="h-4 w-4 text-orange-500" />
+              Detailed Voter Choices
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              See what option each authenticated respondent voted for.
+            </p>
+          </div>
+          <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+            {voterResponses.length} Voter{voterResponses.length === 1 ? "" : "s"}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-2 space-y-4">
+        {voterResponses.length === 0 ? (
+          <div className="py-6 text-center text-sm text-muted-foreground border border-dashed border-border rounded-lg">
+            No votes recorded yet for this poll.
+          </div>
+        ) : (
+          <>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by voter name or email..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 bg-muted/20 dark:bg-white/[0.01] border-border max-w-md focus-visible:ring-orange-500"
+              />
+            </div>
+
+            {filteredResponses.length === 0 ? (
+              <div className="py-6 text-center text-sm text-muted-foreground">
+                No voters match "{search}"
+              </div>
+            ) : (
+              <div className="overflow-x-auto border border-border rounded-lg">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/30 dark:bg-white/[0.01] text-xs font-semibold text-muted-foreground">
+                      <th className="p-3">Voter</th>
+                      {analytics.questions.map((q, idx) => (
+                        <th key={q.questionId} className="p-3 min-w-[150px]">
+                          Q{idx + 1}: {q.text}
+                        </th>
+                      ))}
+                      <th className="p-3 text-right">Voted At</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border text-sm">
+                    {filteredResponses.map((res) => {
+                      const initial = (res.userName || res.userEmail)
+                        .charAt(0)
+                        .toUpperCase();
+
+                      return (
+                        <tr
+                          key={res.responseId}
+                          className="hover:bg-muted/10 dark:hover:bg-white/[0.005]"
+                        >
+                          <td className="p-3">
+                            <div className="flex items-center gap-2.5">
+                              <div className="h-7 w-7 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center text-xs font-bold shrink-0">
+                                {initial}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-medium text-foreground truncate max-w-[160px]">
+                                  {res.userName || "Anonymous Voter"}
+                                </div>
+                                <div className="text-xs text-muted-foreground truncate max-w-[160px]">
+                                  {res.userEmail}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          {analytics.questions.map((q) => {
+                            const ans = res.answers.find(
+                              (a) => a.questionId === q.questionId
+                            );
+                            const optText = ans
+                              ? questionOptionMap.get(q.questionId)?.get(ans.optionId)
+                              : null;
+
+                            return (
+                              <td key={q.questionId} className="p-3">
+                                {optText ? (
+                                  <span className="inline-flex items-center rounded-md bg-orange-500/10 px-2.5 py-1 text-xs font-medium text-orange-500 border border-orange-500/20 max-w-[200px] truncate">
+                                    {optText}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground/50">
+                                    Skipped
+                                  </span>
+                                )}
+                              </td>
+                            );
+                          })}
+                          <td className="p-3 text-right text-xs text-muted-foreground whitespace-nowrap">
+                            {new Date(res.submittedAt).toLocaleString(undefined, {
+                              dateStyle: "short",
+                              timeStyle: "short",
+                            })}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
       </CardContent>
     </Card>
   );
